@@ -1,0 +1,16 @@
+{
+  "name": "zenith-core",
+  "version": "0.1.0",
+  "description": "High-performance universal state and event orchestration engine",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "node tests/core.test.js"
+  },
+  "keywords": ["reactive", "state-management", "event-bus", "universal", "zero-dependency"],
+  "author": "sketchie-durk",
+  "license": "MIT"
+}
