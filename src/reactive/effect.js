@@ -1,6 +1,9 @@
+import { context } from '../core/context.js';
+import { Signal } from './signal.js';
+
 /**
- * ZenithCore Effect Orchestrator: Effect
- * A managed wrapper for side-effects that integrates with the Signal system.
+ * ZenithCore Reactive Primitive: Effect
+ * A managed wrapper for side-effects with automatic dependency tracking.
  */
 export class Effect {
   #fn;
@@ -12,37 +15,41 @@ export class Effect {
   }
 
   /**
-   * Execute the effect.
-   * @param {any} dependency - A Signal to bind the effect to.
+   * Executes the effect and automatically tracks any Signals accessed during execution.
    */
-  bind(dependency) {
-    if (!(dependency instanceof Signal)) {
-      throw new TypeError('Effect can only be bound to Signal instances.');
-    }
+  run() {
+    const prevEffect = context.activeEffect;
+    context.activeEffect = this;
     
-    this.#signalDeps.add(dependency);
+    // Clear dependencies before re-evaluating to ensure current trace
+    this.#signalDeps.clear();
     
-    // Create the subscription to the signal
-    dependency.subscribe(() => {
-      this.#run();
-    });
-  }
-
-  #run() {
-    // Execute cleanup if it exists from previous run
     if (this.#cleanup) {
       this.#cleanup();
     }
 
     try {
-      // Execute the effect and capture return value for cleanup
       const result = this.#fn();
       if (typeof result === 'function') {
         this.#cleanup = result;
       }
     } catch (error) {
       console.error(`[ZenithEffect] Execution error: ${error.message}`);
+    } finally {
+      context.activeEffect = prevEffect;
     }
+  }
+
+  /**
+   * Manually bind a signal to this effect. 
+   * Note: This is now redundant with auto-tracking but kept for explicit control.
+   */
+  bind(dependency) {
+    if (!(dependency instanceof Signal)) {
+      throw new TypeError('Effect can only be bound to Signal instances.');
+    }
+    this.#signalDeps.add(dependency);
+    dependency.subscribe(() => this.run());
   }
 
   dispose() {

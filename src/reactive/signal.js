@@ -11,6 +11,9 @@ export class Signal {
   }
 
   get value() {
+    if (context.activeEffect) {
+      context.activeEffect.bind(this);
+    }
     return this.#value;
   }
 
