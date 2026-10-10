@@ -20,6 +20,11 @@ export class Signal {
     this.#notify();
   }
 
+  // Public method to trigger observers externally
+  notify() {
+    this.#notify();
+  }
+
   subscribe(callback) {
     this.#subscribers.add(callback);
     // Immediate execution for initial sync
